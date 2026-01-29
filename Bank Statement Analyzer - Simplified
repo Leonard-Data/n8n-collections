@@ -1,0 +1,800 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Bank Statement Reader",
+        "formDescription": "Read from Vietcombank bank statements",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "data",
+              "fieldLabel": "data",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf, .zip",
+              "requiredField": true
+            },
+            {
+              "fieldName": "reciever",
+              "fieldLabel": "Reciever",
+              "fieldType": "email",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Process",
+          "path": "bank-statement/parser",
+          "customCss": ":root {\n\t--font-family: 'Open Sans', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\t--font-size-body: 12px;\n\t--font-size-label: 14px;\n\t--font-size-test-notice: 12px;\n\t--font-size-input: 14px;\n\t--font-size-header: 20px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 12px;\n\t--font-size-error: 12px;\n\t--font-size-html-h1: 28px;\n\t--font-size-html-h2: 20px;\n\t--font-size-html-h3: 16px;\n\t--font-size-html-h4: 14px;\n\t--font-size-html-h5: 12px;\n\t--font-size-html-h6: 10px;\n\t--font-size-subheader: 14px;\n\n\t/* Colors */\n\t--color-background: #fbfcfe;\n\t--color-test-notice-text: #e6a23d;\n\t--color-test-notice-bg: #fefaf6;\n\t--color-test-notice-border: #f6dcb7;\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #dbdfe7;\n\t--color-card-shadow: rgba(99, 77, 255, 0.06);\n\t--color-link: #7e8186;\n\t--color-header: #be0028;\n\t--color-label: #be0028;\n\t--color-input-border: #dbdfe7;\n\t--color-input-text: #71747A;\n\t--color-focus-border: rgb(90, 76, 194);\n\t--color-submit-btn-bg: #be0028;\n\t--color-submit-btn-text: #ffffff;\n\t--color-error: #ea1f30;\n\t--color-required: #ff6d5a;\n\t--color-clear-button-bg: #7e8186;\n\t--color-html-text: #555;\n\t--color-html-link: #be0028;\n\t--color-header-subtext: #7e8186;\n\n\t/* Border Radii */\n\t--border-radius-card: 5px;\n\t--border-radius-input: 5px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 8px;\n\n\t/* Spacing */\n\t--padding-container-top: 24px;\n\t--padding-card: 24px;\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 24px;\n\t--margin-bottom-card: 16px;\n\t--padding-form-input: 12px;\n\t--card-padding: 24px;\n\t--card-margin-bottom: 16px;\n\n\t/* Dimensions */\n\t--container-width: 448px;\n\t--submit-btn-height: 48px;\n\t--checkbox-size: 18px;\n\n\t/* Others */\n\t--box-shadow-card: 0px 4px 16px 0px var(--color-card-shadow);\n\t--opacity-placeholder: 0.5;\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -592,
+        288
+      ],
+      "id": "b0a75d96-fca6-4b30-9f19-26cede8d014a",
+      "name": "On form submission",
+      "webhookId": "65e7295c-404e-44c9-977c-a9c4d1ff08b1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://stirling.dksh-hec.com/api/v1/convert/pdf/img",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "fileInput",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "pageNumbers",
+              "value": "all"
+            },
+            {
+              "name": "imageFormat",
+              "value": "png"
+            },
+            {
+              "name": "singleOrMultiple",
+              "value": "multiple"
+            },
+            {
+              "name": "dpi",
+              "value": "300"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        544
+      ],
+      "id": "a414fe10-52ba-425f-a712-83647a0ae801",
+      "name": "Stirling: ConvertToImg",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ehs8hKBJQQdgh4Xt",
+          "name": "Stirling.GlobalKey"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        944,
+        544
+      ],
+      "id": "729cc20a-ba02-4790-8f79-a4406673f97b",
+      "name": "Read compress"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        544
+      ],
+      "id": "9f1a3a60-9c61-4ced-8844-3e5a89fbe50b",
+      "name": "Convert to Base64String"
+    },
+    {
+      "parameters": {
+        "outputPrefix": "data"
+      },
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        1456,
+        624
+      ],
+      "id": "da49f30d-da9b-4392-bc01-e63f4c2be466",
+      "name": "Extract"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "TASK:\nExtract ONLY the transaction records from the attached bank statement image.\n\nIgnore:\n- Account information\n- Opening balance\n- Headers, footers, signatures, stamps\n- Page numbers and bank contact details\n\nOUTPUT REQUIREMENTS:\n- Return JSON only\n- Follow the schema exactly\n- One JSON object per transaction row\n\nJSON SCHEMA:\n{\n  \"transactions\": [\n    {\n      \"no\": \"\",\n      \"transaction_date\": \"\",\n      \"document_no\": \"\",\n      \"debit_amount\": \"\",\n      \"credit_amount\": \"\",\n      \"balance\": \"\",\n      \"description\": \"\",\n      \"ocr_confidence\": \"High | Medium | Low\"\n    }\n  ]\n}\nAnd return SCHEMA if no transctions founded:\n{\n  \"transactions\": [\n    {}\n  ]\n}\nIMPORTANT:\n- Use original language from the document\n- Normalize numbers (remove separators)\n- Keep full transaction descriptions\n- You must respond ONLY with valid raw rendered JSON.\n- Do NOT include the word \"json\".\n- Do NOT include any date in response.\n- Do NOT include the word \"```json\".\n- Do NOT use triple backticks or markdown formatting.\n- Do NOT wrap the response in any key like \"output\".\n- Do NOT write anything starting at output directly start with valid root-level JSON.\n- Only respond with a valid, root-level JSON object.",
+        "needsFallback": true,
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageBinary"
+            },
+            {
+              "message": "You are a financial document extraction AI specialized in bank transaction tables.\n\nYour responsibilities:\n- Read bank statement images accurately\n- Extract transaction rows only\n- Preserve original text and meaning\n\nStrict rules:\n- Output JSON ONLY\n- Do NOT include metadata, headers, or summaries\n- Do NOT explain or add commentary\n- Do NOT guess missing values\n- Leave fields empty if unreadable\n- Monetary values must be numeric only\n- Dates must be in dd/mm/yyyy format\n- Debit and Credit must never both contain values\n- Merge multiline descriptions into a single line\n- Preserve transaction order exactly as shown\n\nIf any value is unclear:\n- Leave it empty\n- Set OCR_Confidence to \"Low\"\n\nAny output that is not valid JSON is a failure.\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        1424,
+        96
+      ],
+      "id": "18af1e03-e151-4a22-90c2-48142b9aedbb",
+      "name": "Basic LLM Chain",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 1024,
+        "height": 1024,
+        "resizeOption": "onlyIfLarger",
+        "options": {}
+      },
+      "id": "7c003d85-39d0-4c4b-bf9b-cd83c7bc3c33",
+      "name": "Resize For AI",
+      "type": "n8n-nodes-base.editImage",
+      "position": [
+        1232,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        976,
+        96
+      ],
+      "id": "f56b8a86-8f7d-4aa2-af2b-6c88334d95e9",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "functionCode": "let results = [];\n\nfor (item of items) {\n    for (key of Object.keys(item.binary)) {\n        results.push({\n            json: {\n                fileName: item.binary[key].fileName\n            },\n            binary: {\n                data: item.binary[key],\n            }\n        });\n    }\n}\n\nreturn results;"
+      },
+      "name": "Split Up Binary Data",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        752,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "b215df1c-f96d-49fa-8a7c-81bf8e3d241f"
+    },
+    {
+      "parameters": {
+        "jsCode": "let results = [];\n\nfor (const item of $input.all()) {\n  const response = item.json.text;\n\n  if (!response || typeof response !== 'string') {\n    continue; // skip invalid input\n  }\n  // Clean the string: remove backspace (\\b), normalize newlines, and ensure valid JSON\n  let cleanedData = response\n  .replace(/\\b/g, '') // Remove backspace characters\n  .replace(/\\n\\s*/g, '') // Remove newlines and extra spaces\n  .replace(/\\\\\"/g, '\"') // Handle escaped quotes\n  .replace(/[\\u0000-\\u001F]+/g,\"\")\n  .replace(/```(?:json)?\\n?/, '') // remove opening ```\n  .replace(/```$/, '')            // remove closing ```\n  .trim();\n\n  try {\n    const parsedData = JSON.parse(cleanedData);\n\n    results.push({\n      json: {\n        data: parsedData\n      }\n    });\n\n  } catch (error) {\n    // parsing failed → skip this item\n    // optionally log error info for debugging\n    results.push({\n      json: {\n        data: {transactions: []},\n      }\n    });\n  }\n}\n\nreturn results;\n"
+      },
+      "id": "63314d4e-9ae6-4922-887d-2194589723bf",
+      "name": "Post-Processing",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1792,
+        -48
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.first().json.data.transactions;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        176
+      ],
+      "id": "497f0829-55e7-4223-be5a-db99bd34d8e2",
+      "name": "Code in JavaScript",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "fileName": "=parser_data.xlsx"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        -224
+      ],
+      "id": "7f43b9a6-c335-4427-bbc8-dce2969c973b",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1143f92d-9cad-47e6-adda-8145fc911c9b",
+              "leftValue": "={{ $json.data.mimetype }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -368,
+        288
+      ],
+      "id": "9dc353de-c220-46e7-bd72-903e21d5b921",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "outputPrefix": "raw_"
+      },
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        544
+      ],
+      "id": "2a9305a8-b23a-435c-b7bf-55f2aa58d1c6",
+      "name": "Extract files"
+    },
+    {
+      "parameters": {
+        "functionCode": "let results = [];\n\nfor (const item of items) {\n  if (!item.binary) continue;\n\n  for (const key of Object.keys(item.binary)) {\n    const binaryData = item.binary[key];\n\n    if (binaryData.mimeType === 'application/pdf') {\n      results.push({\n        json: {\n          fileName: binaryData.fileName,\n          binaryKey: key\n        },\n        binary: {\n          data: binaryData\n        }\n      });\n    }\n  }\n}\n\nreturn results;"
+      },
+      "name": "Split Up Binary Data for PDF",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        272,
+        544
+      ],
+      "typeVersion": 1,
+      "id": "55b5cdfd-b4d2-4f80-bade-04ba60e83c64"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        496,
+        544
+      ],
+      "id": "60f3de8c-60a7-4695-b810-d7fd37e8444b",
+      "name": "Loop Process each files"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://stirling.dksh-hec.com/api/v1/convert/pdf/img",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "fileInput",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "pageNumbers",
+              "value": "all"
+            },
+            {
+              "name": "imageFormat",
+              "value": "png"
+            },
+            {
+              "name": "singleOrMultiple",
+              "value": "multiple"
+            },
+            {
+              "name": "dpi",
+              "value": "300"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        48
+      ],
+      "id": "48b305a8-8936-4974-9825-79c50290b0d3",
+      "name": "Stirling: ConvertToImg1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ehs8hKBJQQdgh4Xt",
+          "name": "Stirling.GlobalKey"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        80,
+        48
+      ],
+      "id": "0fdfb7c6-780e-4f67-90fc-f4e9df2d01c8",
+      "name": "Read compress1"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        48
+      ],
+      "id": "1d74c89c-8b11-4f21-94e8-f15a2edf8489",
+      "name": "Convert to Base64String1"
+    },
+    {
+      "parameters": {
+        "outputPrefix": "data"
+      },
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        48
+      ],
+      "id": "4de2450a-f902-4163-b7fe-d5d2956f3ee5",
+      "name": "Extract1"
+    },
+    {
+      "parameters": {
+        "content": "## Single File of Bank statements process\n",
+        "height": 384,
+        "width": 848
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "72786b8c-a5dd-4cab-a903-0504e7deba0d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## .Zip compressed of multiples Files of Bank statements process\n",
+        "height": 480,
+        "width": 1632,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "53d7b5d6-3ee0-42ee-b20d-b906359f91e4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('On form submission').item.json.reciever }}",
+        "subject": "=Parsing Bank Statements info from: {{ $('On form submission').item.json.fileName }}",
+        "bodyContent": "=<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=us-ascii\">\n</head>\n<body>\nDear users, <br>\n<br>\nPlease take a look at the attached as reference for bank statement processing. <br>\n-------------------------------------------- <br>\nRequest By: <strong>{{ $('On form submission').item.json.reciever }}</strong> <br>\nSubmitted At: <strong>{{ $('On form submission').item.json.submittedAt }}</strong> <br>\n-------------------------------------------- <br>\n\n<strong>Thanks and best regards, </strong>\n</body>\n</html>",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "=data"
+              }
+            ]
+          },
+          "ccRecipients": "binh.hung.phung@dksh.com",
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        -224
+      ],
+      "id": "b6ba14c5-8e1d-408e-8033-2b9bfe235b71",
+      "name": "Send a message",
+      "webhookId": "9c517759-e231-4809-ba5d-cebe1dc9f212",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "NgjDKk8MKvoVWExi",
+          "name": "FA.HCM.Reporting.1 Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-image",
+        "options": {
+          "maxRetries": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        336
+      ],
+      "id": "ae378d70-eebd-4547-9dda-11bb4c882f95",
+      "name": "Gemini-2.5-flash-image",
+      "credentials": {
+        "openRouterApi": {
+          "id": "u1tXWKm5qPV076PA",
+          "name": "N8N.OpenRouter.Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-3-pro-image-preview",
+        "options": {
+          "maxTokens": 4000,
+          "maxRetries": 4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1616,
+        336
+      ],
+      "id": "792c8bdc-7818-4c53-9d7c-b568fc18423a",
+      "name": "Gemini-3-pro image",
+      "credentials": {
+        "openRouterApi": {
+          "id": "u1tXWKm5qPV076PA",
+          "name": "N8N.OpenRouter.Gemini"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stirling: ConvertToImg": {
+      "main": [
+        [
+          {
+            "node": "Read compress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read compress": {
+      "main": [
+        [
+          {
+            "node": "Convert to Base64String",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Base64String": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "Loop Process each files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Post-Processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resize For AI": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resize For AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Up Binary Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post-Processing": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Stirling: ConvertToImg1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract files": {
+      "main": [
+        [
+          {
+            "node": "Split Up Binary Data for PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Up Binary Data for PDF": {
+      "main": [
+        [
+          {
+            "node": "Loop Process each files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Process each files": {
+      "main": [
+        [
+          {
+            "node": "Split Up Binary Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stirling: ConvertToImg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stirling: ConvertToImg1": {
+      "main": [
+        [
+          {
+            "node": "Read compress1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read compress1": {
+      "main": [
+        [
+          {
+            "node": "Convert to Base64String1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Base64String1": {
+      "main": [
+        [
+          {
+            "node": "Extract1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract1": {
+      "main": [
+        [
+          {
+            "node": "Split Up Binary Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini-2.5-flash-image": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini-3-pro image": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5586009c1463f7fbfa069d205f8c9190845942f5e99eeb20af1b463409be2b6"
+  }
+}
