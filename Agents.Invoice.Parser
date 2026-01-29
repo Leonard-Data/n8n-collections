@@ -1,0 +1,436 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json.output;\n// Clean the string: remove backspace (\\b), normalize newlines, and ensure valid JSON\nlet cleanedData = response\n  .replace(/\\b/g, '') // Remove backspace characters\n  .replace(/\\n\\s*/g, '') // Remove newlines and extra spaces\n  .replace(/\\\\\"/g, '\"') // Handle escaped quotes\n  .replace(/[\\u0000-\\u001F]+/g,\"\")\n  .replace(/```(?:json)?\\n?/, '') // remove opening ```\n  .replace(/```$/, '')            // remove closing ```\n  .trim();\nlet parsedData = JSON.parse(cleanedData);\nreturn [{\n  json: parsedData\n}];"
+      },
+      "id": "19d7b386-bd83-4137-b8bb-024ae734ac96",
+      "name": "Post-Processing",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -272,
+        240
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data0",
+        "options": {}
+      },
+      "id": "002f83e8-c0de-4ff5-b0af-7775829d76ef",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -1600,
+        256
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Reading Invoice's PDF File Locally",
+        "height": 504,
+        "width": 412,
+        "color": 7
+      },
+      "id": "5ed324b3-d28f-4d56-95fc-0f70a58a7e0a",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2352,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Extracting Details From Invoice PDF",
+        "height": 808,
+        "width": 780,
+        "color": 7
+      },
+      "id": "b043ae40-f43b-4ef5-bd58-a0e87702fc37",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1872,
+        -16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Processing Output",
+        "height": 556,
+        "width": 880,
+        "color": 7
+      },
+      "id": "96c99b36-9169-4518-bb62-baaff8a2758b",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1056,
+        -16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sgb/invoice/parser",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2144,
+        256
+      ],
+      "id": "5000acee-1d18-47aa-8d55-43bf8b5fcd7a",
+      "name": "Webhook",
+      "webhookId": "695653da-8770-43fd-b65e-f977f388ec2d",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "UgNLpEOEMAoK3qpX",
+          "name": "SGB.Invoice.Parser token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=- You must respond ONLY with valid raw rendered JSON.\n- Do NOT include the word \"json\".\n- Do NOT include any date in response.\n- Do NOT include the word \"```json\".\n- Do NOT use triple backticks or markdown formatting.\n- Do NOT wrap the response in any key like \"output\".\n- Do NOT write anything starting at output directly start with valid root-level JSON.\n- Only respond with a valid, root-level JSON object.\n- Do NOT skip any line item. Continue extracting all line items until the sum of all line_total values exactly equals the total sale amount extracted from the invoice. This verification ensures that all items are fully extracted and no entries are missed. If the totals do not match, keep parsing and extracting additional line items until they do. Only then stop.\n\nText to convert: {{ $json.text }}",
+        "options": {
+          "systemMessage": "=You are a document parsing assistant designed to extract structured data from invoice PDFs for automated uploading and validation in a financial system.\nExpexted output JSON format: \n{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"invoice_number\": { \"type\": \"string\" },\n    \"name\": { \"type\": \"string\" },\n    \"address\": { \"type\": \"string\" },\n    \"line_items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"product_code\": { \"type\": \"string\" },\n          \"batch\": { \"type\": \"string\" },\n          \"description\": { \"type\": \"string\" },\n          \"quantity\": { \"type\": \"number\" },\n          \"unit_price\": { \"type\": \"number\" },\n          \"amount\": { \"type\": \"number\" }\n        },\n        \"required\": [\"description\", \"quantity\", \"unit_price\", \"batch\"]\n      }\n    },\n    \"totals\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"gross_amount\": { \"type\": \"number\" },\n        \"discount\": { \"type\": \"number\" },\n        \"net_amount\": { \"type\": \"number\" },\n        \"total_amount\": { \"type\": \"number\" }\n      },\n      \"required\": [\"gross_amount\", \"net_amount\", \"total_amount\"]\n    }\n  },\n  \"required\": [\"invoice_number\", \"invoice_date\", \"date\", \"name\", \"address\", \"line_items\", \"totals\"]\n}\n\nExtract the following fields from the invoice text:\n\ninvoice_number: Extract from the 'Invoice No', or 'INVOICE NO'  field.\nname: Company name issuing the invoice.\nUnder totals:\n- gross_amount: total before discount (from \"TOTAL\").\n- discount: if missing, set to 0.\n- net_amount: same as gross unless discounts are specified.\n- total_amount: \"GRAND TOTAL\".\n\nline_items: List of all items in the invoice. For each item, extract:\n- product_code: use the product reference line (e.g., \"No.1-2149\").\n\n- batch: extract only the batch codes after \"Batch #:\" or lot numbers. Remove the \"Batch #:\" text. if not existed return \"\"\n\ndescription: product name (e.g., \"MORIHEPAMIN 200ML\").\nquantity: number of boxes.\nunit_price: numeric unit price per box.\namount: total amount for that line.\n\nImportant: Double-check that all line items are extracted without omission.\n\nDo NOT skip any line item. Continue extracting all line items until the sum of all line_total values exactly equals the total_amount extracted from the invoice. This verification ensures that all items are fully extracted and no entries are missed. If the totals do not match, keep parsing and extracting additional line items until they do. Only then stop."
+        }
+      },
+      "id": "c33334f3-8829-4c4c-8bb5-9070b7846147",
+      "name": "Agent Invoice Extractor",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -592,
+        240
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d34756fc-0a75-40e1-9040-a27d0f753ffd",
+              "leftValue": "={{ $json.text.trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1440,
+        256
+      ],
+      "id": "a31171e7-f072-4c2b-b462-c9a15bb9edec",
+      "name": "Check convert output"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -64,
+        240
+      ],
+      "id": "f1501335-b98c-41c7-983e-e9fdd2fa1f25",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        416
+      ],
+      "id": "419e86d4-71f1-4f57-987c-a358684d58d2",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "u1tXWKm5qPV076PA",
+          "name": "N8N.OpenRouter.Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "file_0",
+        "options": {
+          "language": "eng",
+          "resolution": {
+            "resolution": {
+              "forceResolution": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-tesseractjs.tesseractNode",
+      "typeVersion": 1,
+      "position": [
+        -928,
+        624
+      ],
+      "id": "f6395a02-916a-4e12-affe-060da99acc76",
+      "name": "Tesseract"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://stirling.dksh-hec.com/api/v1/convert/pdf/img",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "fileInput",
+              "inputDataFieldName": "file_0"
+            },
+            {
+              "name": "pageNumbers",
+              "value": "all"
+            },
+            {
+              "name": "imageFormat",
+              "value": "png"
+            },
+            {
+              "name": "singleOrMultiple",
+              "value": "multiple"
+            },
+            {
+              "name": "dpi",
+              "value": "300"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1616,
+        624
+      ],
+      "id": "117fa2e8-c180-494c-9cd9-80c034b2712e",
+      "name": "Stirling: ConvertToImg",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ehs8hKBJQQdgh4Xt",
+          "name": "Stirling.GlobalKey"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        624
+      ],
+      "id": "92bbc8b6-2a0a-4a5f-8cf1-c2b27d47c24f",
+      "name": "Read compress"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1248,
+        624
+      ],
+      "id": "cb255ba9-a904-450f-8e82-797b8779dc84",
+      "name": "Convert to Base64String"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        -1088,
+        624
+      ],
+      "id": "f0713641-f19d-40e6-bb94-4ce1bef553fc",
+      "name": "Extract"
+    }
+  ],
+  "connections": {
+    "Post-Processing": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Check convert output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Invoice Extractor": {
+      "main": [
+        [
+          {
+            "node": "Post-Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check convert output": {
+      "main": [
+        [
+          {
+            "node": "Agent Invoice Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stirling: ConvertToImg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent Invoice Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tesseract": {
+      "main": [
+        [
+          {
+            "node": "Agent Invoice Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stirling: ConvertToImg": {
+      "main": [
+        [
+          {
+            "node": "Read compress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read compress": {
+      "main": [
+        [
+          {
+            "node": "Convert to Base64String",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Base64String": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "Tesseract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5586009c1463f7fbfa069d205f8c9190845942f5e99eeb20af1b463409be2b6"
+  }
+}
