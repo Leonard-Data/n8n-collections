@@ -1,0 +1,1176 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "RequestVerificationToken",
+              "cssSelector": "input[name=\"__RequestVerificationToken\"]",
+              "returnValue": "attribute",
+              "attribute": "value"
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        -64
+      ],
+      "id": "3015f8ef-740d-4452-9fdc-ffedde00f721",
+      "name": "Get Verify Token"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Config').item.json.endpoint }}/Captcha/Show",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookie }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        160
+      ],
+      "id": "73dc6f40-eaea-45b1-a50c-1a89a45c0cac",
+      "name": "Get Captcha image"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        464,
+        160
+      ],
+      "id": "b9ca0346-61a5-4068-8f68-fa9760d27712",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.captchaSerive }}/createTask",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"clientKey\":\"{{ $('Config').item.json.captchaKey }}\",\n\"task\":\n    {\n        \"type\":\"ImageToTextTask\",\n        \"body\":\"{{ $json.data }}\",\n        \"phrase\":false,\n        \"case\":false,\n        \"numeric\":0,\n        \"math\":false,\n        \"minLength\":0,\n        \"maxLength\":0,\n        \"languagePool\":\"en\"\n    },\n\"softId\": 0\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        160
+      ],
+      "id": "5ea6dd5e-aaeb-4c04-a49b-29670c8ead7a",
+      "name": "Create task"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        160
+      ],
+      "id": "bb13ba50-54ff-4c2f-88da-b089719beb0f",
+      "name": "Wait",
+      "webhookId": "587f6a89-5ab5-4e04-ac57-cb5bb4a79a63",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.captchaSerive }}/getTaskResult",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"clientKey\":\"{{ $('Config').item.json.captchaKey }}\",\n  \"taskId\":\"{{ $('Create task').item.json.taskId }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        160
+      ],
+      "id": "49f273f1-857c-493b-a003-6aa7500f1422",
+      "name": "Captcha Result",
+      "retryOnFail": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8c96e65c-b140-4b1e-a9f6-b82c9884759f",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "processing",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "1e95ed3b-34aa-4f6b-9873-abd67a07a662",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "waiting",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        160
+      ],
+      "id": "3c1a8a84-e1ae-4e93-900e-014fa4324eeb",
+      "name": "Check if Task is resolved",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e91df4fb-9484-4751-989e-a8609e78d758",
+              "leftValue": "={{ $json.errorCode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        432
+      ],
+      "id": "5fe365b7-feff-428b-a7aa-9884d50ffc89",
+      "name": "Check Error Code is Existed",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c5bf699-fd50-430e-bf0a-c565c178d6f3",
+              "name": "=endpoint",
+              "value": "={{ $('GET: Account').item.json.Link }}",
+              "type": "string"
+            },
+            {
+              "id": "edf66d8e-0c9e-45d7-8c7d-edb9d7f8ba5e",
+              "name": "captchaSerive",
+              "value": "https://api.anti-captcha.com",
+              "type": "string"
+            },
+            {
+              "id": "825b5e90-caf0-40a9-94e4-500ce0bd33e3",
+              "name": "captchaKey",
+              "value": "6482a16c34ad7579284da6fb3772a66c",
+              "type": "string"
+            },
+            {
+              "id": "59a0aa2b-7722-4fd3-bc27-c579117ecff5",
+              "name": "date",
+              "value": "={{ $now.format('dd/MM/yyyy') }}",
+              "type": "string"
+            },
+            {
+              "id": "f81dbcf3-7821-4cc7-9869-7bcaf9298942",
+              "name": "columns",
+              "value": "CusCode/CusName/CusAddress/CusTaxCode/Pattern/Serial/No/Status/CreateDate/PublishDate/Note/DiscountRate/Total/DiscountAmount/CurrencyUnit/VATRate/VATAmount/Amount/Converted/GrossValue/GrossValue0/VatAmount0/GrossValue5/VatAmount5/GrossValue10/VatAmount10/GrossValueNonTax/MTC/VatAmount8/GrossValue8/UploadStatus/Extra/Extra1/Extra2/Extra3/Extra4/Extra5/Extra6/Extra7/Extra8/Extra9/Extra10/Extra11/Extra12",
+              "type": "string"
+            },
+            {
+              "id": "4e7277d8-2602-49c9-bb38-b8e324bcffc8",
+              "name": "counter",
+              "value": 0,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -64
+      ],
+      "id": "f20e3dc1-16eb-474d-98b7-5349f535c377",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge cookie arrays safely\nconst cookies = $('LogOn').first().json.headers?.['set-cookie'] || [];\n\n// Create a map to store cookie key-value pairs\nconst cookieMap = new Map();\n\nfor (const cookie of cookies) {\n  const [nameValue] = cookie.split(';'); // Get first part before any attributes\n  const [name, value] = nameValue.split('=').map(s => s?.trim()); // Ensure trimming\n  if (name && value && !cookieMap.has(name)) {\n    cookieMap.set(name, value);\n  }\n}\n\n// Build the Cookie header string\nconst cookieHeader = Array.from(cookieMap.entries())\n  .map(([name, value]) => `${name}=${value}`)\n  .join('; ');\n\n\n// Return the result\nreturn [\n  {\n    json: {\n      cookie: cookieHeader,\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -64
+      ],
+      "id": "7641bb8f-2eb9-4644-b9a0-de1ad11b6da0",
+      "name": "get Cookies"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Config').item.json.endpoint }}/Account/LogOn",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "autocomplete",
+              "value": "off"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        -64
+      ],
+      "id": "93bdb768-9214-4231-89ed-e6e2d6a22b50",
+      "name": "LogOn"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.endpoint }}/Account/LogOn",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "autocomplete",
+              "value": "off"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $('get Cookies').item.json.cookie }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "__RequestVerificationToken",
+              "value": "={{ $('Get Verify Token').item.json.RequestVerificationToken }}"
+            },
+            {
+              "name": "IsThread",
+              "value": "False"
+            },
+            {
+              "name": "ReturnUrl",
+              "value": "/"
+            },
+            {
+              "name": "UserName",
+              "value": "={{ $('Set: Parameters').item.json.Account }}"
+            },
+            {
+              "name": "Password",
+              "value": "={{ $('GET: Account').item.json.Pass }}"
+            },
+            {
+              "name": "captch",
+              "value": "={{ $('Captcha Result').item.json.solution.text }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        432
+      ],
+      "id": "a83a1113-2d69-499f-9140-58b399d49158",
+      "name": "Get ASPXAUTH",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const setCookieHeader = $input.first().json.headers['set-cookie'];\nconst existingCookie = $('get Cookies').first().json.cookie;\n\n// Handle case when set-cookie is missing or not an array\nconst newCookie = Array.isArray(setCookieHeader) ? setCookieHeader[0] : setCookieHeader;\n\nconst combinedCookie = newCookie + '; ' + existingCookie;\n\nreturn [\n  {\n    json: {\n      cookie: combinedCookie\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        432
+      ],
+      "id": "739ef21b-d21d-4932-b412-606a86ecd444",
+      "name": "Auth Cookies"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Config').item.json.endpoint }}/ExportExcelAndPdf/DataReportInvoices",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ColumnsReport",
+              "value": "CusName/Pattern/Serial/No/Status/PublishDate"
+            },
+            {
+              "name": "FromDate",
+              "value": "={{ $('Config').item.json.date }}"
+            },
+            {
+              "name": "Serial"
+            },
+            {
+              "name": "ToDate",
+              "value": "={{ $('Config').item.json.date }}"
+            },
+            {
+              "name": "IsReportFix",
+              "value": "false"
+            },
+            {
+              "name": "Quarter"
+            },
+            {
+              "name": "Month"
+            },
+            {
+              "name": "Year",
+              "value": "={{ $now.year }}"
+            },
+            {
+              "name": "Pattern",
+              "value": "={{ $json.value }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{$('Auth Cookies').item.json.cookie}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 50000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2096,
+        496
+      ],
+      "id": "162b9edd-ffd2-4f12-ab65-594e5829b387",
+      "name": "Get Reports",
+      "retryOnFail": true,
+      "maxTries": 3
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "records",
+              "cssSelector": "#totalRecords",
+              "returnValue": "attribute",
+              "attribute": "value"
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        2256,
+        496
+      ],
+      "id": "f1f5e867-e608-421d-a760-7a0e1032a15d",
+      "name": "get totalRecords"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1872,
+        416
+      ],
+      "id": "72384e4e-a87c-4da0-9edd-2455906972ba",
+      "name": "Loop Over Items",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9c72ed9a-8498-40e0-a198-1ae0a7c25d3c",
+              "leftValue": "={{ $('get totalRecords').item.json.records.toNumber() }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2416,
+        496
+      ],
+      "id": "42e09f82-2058-4861-a524-e7ae56b934b7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "headerRow": true,
+          "range": "A6:AS10000"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        2768,
+        496
+      ],
+      "id": "be7eb200-82e0-4c1e-a1b8-d23157e2861e",
+      "name": "Extract from File1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Config').item.json.endpoint }}/ExportExcelAndPdf/DownloadInvoicesReportPrint",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "nameexport",
+              "value": "THỐNG KÊ CHI TIẾT HÓA ĐƠN"
+            },
+            {
+              "name": "pattern",
+              "value": "={{ $('Loop Over Items').item.json.value }}"
+            },
+            {
+              "name": "serial"
+            },
+            {
+              "name": "Status",
+              "value": "-1"
+            },
+            {
+              "name": "FromDate",
+              "value": "={{ $('Config').item.json.date }}"
+            },
+            {
+              "name": "ToDate",
+              "value": "={{ $('Config').item.json.date }}"
+            },
+            {
+              "name": "type",
+              "value": "xls"
+            },
+            {
+              "name": "columns",
+              "value": "={{ $('Config').item.json.columns }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{$('Auth Cookies').item.json.cookie}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 50000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2608,
+        496
+      ],
+      "id": "77cba895-03fa-4b6b-9024-84815f05ea79",
+      "name": "Download Reports",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {}\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        704
+      ],
+      "id": "ee8d6f60-a4be-4f6a-a608-38533d8b2018",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "075ec924-4fe2-4dbd-842b-614fb1589fde",
+              "name": "SiteID",
+              "value": "dksh.sharepoint.com,67c583d1-4d42-4361-9508-d159617fdb25,0aa1fc9f-0abc-4310-8ea4-03558cf8e0a5",
+              "type": "string"
+            },
+            {
+              "id": "f13b62b3-2d37-4af5-b026-e33d03fa9fdf",
+              "name": "DriveID",
+              "value": "b!0YPFZ0JNYUOVCNFZYX_bJZ_8oQq8ChBDjqQDVYz44KUdO627FsCPSISJbYJSnh6y",
+              "type": "string"
+            },
+            {
+              "id": "e6b9227d-b75c-47ce-904e-b2684e53001a",
+              "name": "Path",
+              "value": "root:/VNPT_EINVOICE",
+              "type": "string"
+            },
+            {
+              "id": "161453cb-a6b0-4701-9d6f-3c594592381d",
+              "name": "MasterPath",
+              "value": "root:/VNPT_EINVOICE/Config.json",
+              "type": "string"
+            },
+            {
+              "id": "83c1876a-93d2-4c90-8f08-2de8b01f00e3",
+              "name": "Account",
+              "value": "={{ $json.query.Account }}",
+              "type": "string"
+            },
+            {
+              "id": "cdec3670-d450-4ae6-a539-5554f1cc5d1f",
+              "name": "SheetName",
+              "value": "Data",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -656,
+        -64
+      ],
+      "id": "c94d8f0a-cc2c-4543-9fe3-613a420902e9",
+      "name": "Set: Parameters"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.first().json[$('Set: Parameters').first().json.Account]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -64
+      ],
+      "id": "9dd01e30-6380-45fe-8294-885a9c55867a",
+      "name": "GET: Account"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.microsoft.com/v1.0/sites/{{ $json.SiteID }}/drives/{{ $json.DriveID }}/{{ $json.MasterPath }}:/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -448,
+        -64
+      ],
+      "id": "34dd7068-f808-4c01-be7f-99bf581260b3",
+      "name": "Graph API: master file info",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "68UfHiIYkxA2haRO",
+          "name": "Graph Oauth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## GET: Excel Source Master\n----\n- Method: GET\n- Site: **VN Others**\n- Drives (Sector): **Finance**\n- Config Path: **/root:/VNPT_EINVOICE/Config.json**\n## Output:\n- `List of credentails and access `\n- `Worksheet ID, Table ID`\n- Content: Application/Json\n",
+        "height": 420,
+        "width": 580,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -704,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "ecc63018-5d94-4f6d-9360-20c31c7060b5",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2064,
+        336
+      ],
+      "id": "9e17a958-b385-4079-b5d2-1dba2bfc88a4",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "path": "api/v1/einvoices/scrawler",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        -64
+      ],
+      "id": "8dbaf918-80aa-4a77-be1b-697c2a3f459c",
+      "name": "Webhook",
+      "webhookId": "7672cda4-5b96-4fde-ae2f-87a4ad4e79fa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fkouF0ZOxc5HUz7B",
+          "name": "VNPT EINVOICE Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const htmlString = $input.first().json.patterns;\n\n// Extract option values using regex\nconst options = Array.from(htmlString.matchAll(/<option[^>]*>(.*?)<\\/option>/g), match => match[1]);\n\n// Format as n8n-compatible output (array of objects)\nreturn options.map(value => ({ json: { value } }));\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        432
+      ],
+      "id": "ca25e0a3-ffb7-4a92-9e47-9856ce55ebdb",
+      "name": "Get options",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "patterns",
+              "cssSelector": "#Pattern",
+              "returnValue": "html"
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1168,
+        432
+      ],
+      "id": "5b64719a-0a8f-48c4-8d92-db740d5557d1",
+      "name": "GET Patterns HTML"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Config').item.json.endpoint }}/ExportExcelAndPdf/ReportInvoices",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{$('Auth Cookies').item.json.cookie}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 50000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        432
+      ],
+      "id": "79e5a1b5-f289-41ce-8a87-b0f292ff5ea3",
+      "name": "Open reports",
+      "retryOnFail": true,
+      "maxTries": 3
+    }
+  ],
+  "connections": {
+    "Get Verify Token": {
+      "main": [
+        [
+          {
+            "node": "get Cookies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Captcha image": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Create task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create task": {
+      "main": [
+        [
+          {
+            "node": "Captcha Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Captcha Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Captcha Result": {
+      "main": [
+        [
+          {
+            "node": "Check if Task is resolved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Task is resolved": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Error Code is Existed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Error Code is Existed": {
+      "main": [
+        [
+          {
+            "node": "Get ASPXAUTH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "LogOn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get Cookies": {
+      "main": [
+        [
+          {
+            "node": "Get Captcha image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LogOn": {
+      "main": [
+        [
+          {
+            "node": "Get Verify Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ASPXAUTH": {
+      "main": [
+        [
+          {
+            "node": "Auth Cookies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auth Cookies": {
+      "main": [
+        [
+          {
+            "node": "Open reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Reports": {
+      "main": [
+        [
+          {
+            "node": "get totalRecords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get totalRecords": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Download Reports",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Reports": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Parameters": {
+      "main": [
+        [
+          {
+            "node": "Graph API: master file info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: Account": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Graph API: master file info": {
+      "main": [
+        [
+          {
+            "node": "GET: Account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set: Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get options": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LogOn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Patterns HTML": {
+      "main": [
+        [
+          {
+            "node": "Get options",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open reports": {
+      "main": [
+        [
+          {
+            "node": "GET Patterns HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "66e28cbb3850b511b1209f3d31dd19e9b521b19298bfc7be79f6a0019e7fadaf"
+  }
+}
