@@ -1,0 +1,1370 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "DKSH's Taxtation Scraper (MSTDN)",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "your working mail...",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Batch File",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".xlsx, .xls",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "mstdn"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "path": "v1/mstdn/scraper",
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Your response has been recorded. ATTENTION: if you're not enter correct email, the results will not generated in any cases!"
+            }
+          },
+          "customCss": ":root {\n\t--font-family: 'Open Sans', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\t--font-size-body: 12px;\n\t--font-size-label: 14px;\n\t--font-size-test-notice: 12px;\n\t--font-size-input: 14px;\n\t--font-size-header: 20px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 12px;\n\t--font-size-error: 12px;\n\t--font-size-html-h1: 28px;\n\t--font-size-html-h2: 20px;\n\t--font-size-html-h3: 16px;\n\t--font-size-html-h4: 14px;\n\t--font-size-html-h5: 12px;\n\t--font-size-html-h6: 10px;\n\t--font-size-subheader: 14px;\n\n\t/* Colors */\n\t--color-background: #fbfcfe;\n\t--color-test-notice-text: #e6a23d;\n\t--color-test-notice-bg: #fefaf6;\n\t--color-test-notice-border: #f6dcb7;\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #dbdfe7;\n\t--color-card-shadow: rgba(99, 77, 255, 0.06);\n\t--color-link: #7e8186;\n\t--color-header: #be0028;\n\t--color-label: #be0028;\n\t--color-input-border: #dbdfe7;\n\t--color-input-text: #71747A;\n\t--color-focus-border: rgb(90, 76, 194);\n\t--color-submit-btn-bg: #be0028;\n\t--color-submit-btn-text: #ffffff;\n\t--color-error: #ea1f30;\n\t--color-required: #ff6d5a;\n\t--color-clear-button-bg: #7e8186;\n\t--color-html-text: #555;\n\t--color-html-link: #be0028;\n\t--color-header-subtext: #7e8186;\n\n\t/* Border Radii */\n\t--border-radius-card: 5px;\n\t--border-radius-input: 5px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 8px;\n\n\t/* Spacing */\n\t--padding-container-top: 24px;\n\t--padding-card: 24px;\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 24px;\n\t--margin-bottom-card: 16px;\n\t--padding-form-input: 12px;\n\t--card-padding: 24px;\n\t--card-margin-bottom: 16px;\n\n\t/* Dimensions */\n\t--container-width: 448px;\n\t--submit-btn-height: 48px;\n\t--checkbox-size: 18px;\n\n\t/* Others */\n\t--box-shadow-card: 0px 4px 16px 0px var(--color-card-shadow);\n\t--opacity-placeholder: 0.5;\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1056,
+        592
+      ],
+      "id": "0ed8f393-a992-4dc1-986d-f2a61bde5cdc",
+      "name": "On form submission",
+      "webhookId": "569b7444-4e6c-4a48-a08f-3bb4742cdbc7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b6289c71-64de-436a-b7fd-1882b292a6ec",
+              "leftValue": "={{ $('On form submission').item.json.Email }}",
+              "rightValue": "@dksh.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c5203c55-816b-48a6-a455-b5294726a4a9",
+              "leftValue": "={{ $('On form submission').item.json.Email }}",
+              "rightValue": "@gigamed.com.vn",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "5fefcdcc-bf4b-4a27-88b4-223a2d7b5abf",
+              "leftValue": "={{ $('On form submission').item.json.Email }}",
+              "rightValue": "@izisolution.com.vn",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        592
+      ],
+      "id": "bf8de026-d246-4b67-88f3-d19eb50b1e6f",
+      "name": "Correct email?"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.microsoft.com/beta/users?$filter=mail eq '{{ $('On form submission').item.json.Email }}'",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        64,
+        592
+      ],
+      "id": "8f9141a0-f96d-4cec-b3f1-1917153b1160",
+      "name": "GET User Info",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "68UfHiIYkxA2haRO",
+          "name": "Graph Oauth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "Batch_File",
+        "options": {
+          "headerRow": true,
+          "includeEmptyCells": false,
+          "range": "A1:E5001",
+          "rawData": false,
+          "readAsString": false
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        512,
+        592
+      ],
+      "id": "054dd781-8cfb-4a54-b19a-1d44738a43d6",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f70cc87-6c74-4b1b-b2f7-bd507e0d1fb6",
+              "name": "type",
+              "value": "={{ $('On form submission').first().json.Type }}",
+              "type": "string"
+            },
+            {
+              "id": "2c5bf699-fd50-430e-bf0a-c565c178d6f3",
+              "name": "=endpoint",
+              "value": "=https://tracuunnt.gdt.gov.vn/tcnnt/{{ $('On form submission').first().json.Type }}.jsp",
+              "type": "string"
+            },
+            {
+              "id": "1b82c7e8-d789-4fdf-82f5-9b4edfa94e8c",
+              "name": "header",
+              "value": "{\n  \"User-Agent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:120.0) Gecko/20100101 Firefox/120.0\",\n  \"Accept-Language\": \"en-US,en;q=0.9\",\n  \"Accept\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8\",\n  \"Accept-Encoding\": \"gzip, deflate, br\",\n  \"Connection\": \"keep-alive\",\n  \"Upgrade-Insecure-Requests\": \"1\",\n  \"Sec-Fetch-Dest\": \"document\",\n  \"Sec-Fetch-Mode\": \"navigate\",\n  \"Sec-Fetch-Site\": \"none\",\n  \"Sec-Fetch-User\": \"?1\",\n  \"Cache-Control\": \"max-age=0\"\n}\n",
+              "type": "object"
+            },
+            {
+              "id": "e3a2dfcc-529a-48ef-9aad-ee5230315789",
+              "name": "host",
+              "value": " https://tracuunnt.gdt.gov.vn",
+              "type": "string"
+            },
+            {
+              "id": "edf66d8e-0c9e-45d7-8c7d-edb9d7f8ba5e",
+              "name": "captchaSerive",
+              "value": "https://api.anti-captcha.com",
+              "type": "string"
+            },
+            {
+              "id": "825b5e90-caf0-40a9-94e4-500ce0bd33e3",
+              "name": "captchaKey",
+              "value": "6482a16c34ad7579284da6fb3772a66c",
+              "type": "string"
+            },
+            {
+              "id": "065b6b2c-28fa-4f4c-b3e9-566930b7212d",
+              "name": "retry",
+              "value": 2,
+              "type": "number"
+            },
+            {
+              "id": "2ecf0f3c-9afd-41b1-8ad4-b3fd1626cd64",
+              "name": "tax_number",
+              "value": "={{ $json['VAT Registration No.'] }}",
+              "type": "string"
+            },
+            {
+              "id": "72673289-bcca-481c-b557-83426f007f81",
+              "name": "id_number",
+              "value": "={{ $json['ID Number'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1184,
+        96
+      ],
+      "id": "85697f59-4504-4407-bb72-0a357ab6472b",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.endpoint }}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={{ $('Config').first().json.header.toJsonString() }}",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "specifyBody": "string",
+        "body": "={{ $json.encoded }}",
+        "options": {
+          "allowUnauthorizedCerts": false,
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1632,
+        16
+      ],
+      "id": "40971d88-c830-4a57-9b9d-ea4ce18a790d",
+      "name": "GET: Captcha uuid",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n\nconst html = $input.first().json.data;\nconst setCookies = $input.first().json.headers[\"set-cookie\"];\n\nconst cookieMap = {};\n// if you have them from prior storage\nconst requiredKeys = [\"TS0133099e\", \n                      \"JSESSIONID\", \n                      \"Merry-Christmas\", \n                      \"JGhfjdFAdk\",\n                      \"f5avrbbbbbbbbbbbbbbbb\",\n                     \"f5avraaaaaaaaaaaaaaaa_session_\",\n                     ];\n// Parse Set-Cookie headers\nfor (const cookieStr of setCookies) {\n  const parts = cookieStr.split(';')[0].split('=');\n  const name = parts[0].trim();\n  const value = parts.slice(1).join('=').trim();\n  if (requiredKeys.includes(name)) {\n      cookieMap[name] = value;\n  }\n}\n\n// Extract all <script id=\"f5_cspm\"> blocks\nconst matches = [...html.matchAll(/f5_p:'([^']+)'/g)];\n\nif (matches.length >= 2) {\n  // f5_p values\n  const f5_p1 = matches[0][1];\n  const f5_p2 = matches[1][1];\n\n  // Assign to respective cookie keys\n  // cookieMap[\"f5avr1075019721aaaaaaaaaaaaaaaa_cspm_\"] = f5_p1;\n  cookieMap[\"f5avr1796159269aaaaaaaaaaaaaaaa\"] = f5_p1;\n  cookieMap[\"f5avr1075019721aaaaaaaaaaaaaaaa_cspm_\"] = f5_p2;\n\n} else if (matches.length === 1) {\n  // Fallback in case only one is found\n  const f5_p = matches[0][1];\n  cookieMap[\"f5avr1796159269aaaaaaaaaaaaaaaa\"] = f5_p;\n}\n\n\n// Always set f5_cspm=1234 (triggering JS behavior)\ncookieMap[\"f5_cspm\"] = \"1234\";\n\n// Convert to valid Cookie header\nconst cookieHeader = Object.entries(cookieMap)\n  .map(([k, v]) => `${k}=${v}`)\n  .join(\"; \");\n\n\n// Step 4: Extract CAPTCHA image\nlet captchaUrl = null;\nconst tableMatch = html.match(/<table[^>]*class=['\"]search_form['\"][^>]*>[\\s\\S]*?<\\/table>/i);\nif (tableMatch) {\n  const imgMatch = tableMatch[0].match(/<img[^>]*src=['\"]([^'\"]+)['\"]/i);\n  if (imgMatch) captchaUrl = imgMatch[1];\n}\nconst fullcaptchaUrl = $('Config').first().json.host+captchaUrl\nconst headers = $('Config').first().json.header\nheaders.cookie = cookieHeader;\nreturn [\n  {\n    json: {\n      captchaUrl: fullcaptchaUrl,\n      headers\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -48
+      ],
+      "id": "5374cec4-5bc8-4b13-9d4f-63c04afa3013",
+      "name": "GET: UUID and Cookie Fields"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.captchaUrl.trim() }}12345",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={{ $json.headers.toJsonString() }}",
+        "options": {
+          "allowUnauthorizedCerts": false,
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        -48
+      ],
+      "id": "dc804f10-40a2-4767-9230-bd46856f8d97",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "waitBetweenTries": 500,
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        2304,
+        -112
+      ],
+      "id": "b5aded2b-1fb8-426e-a60e-4d479304cf77",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.captchaSerive }}/createTask",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"clientKey\":\"{{ $('Config').item.json.captchaKey }}\",\n\"task\":\n    {\n        \"type\":\"ImageToTextTask\",\n        \"body\":\"{{ $json.data }}\",\n        \"phrase\":false,\n        \"case\":false,\n        \"numeric\":0,\n        \"math\":false,\n        \"minLength\":0,\n        \"maxLength\":0,\n        \"languagePool\":\"en\"\n    },\n\"softId\": 0\n}",
+        "options": {
+          "allowUnauthorizedCerts": false
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2528,
+        -112
+      ],
+      "id": "de7f66bf-6ba6-4880-bdf1-1f2791395b88",
+      "name": "Create task",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3280,
+        -304
+      ],
+      "id": "dd7506a7-1224-4ec4-94a6-9bfcb537f843",
+      "name": "Wait",
+      "webhookId": "1b125ab9-6ac2-4e86-abf3-8431c14db00c",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.captchaSerive }}/getTaskResult",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"clientKey\":\"{{ $('Config').first().json.captchaKey }}\",\n  \"taskId\":\"{{ $('Create task').first().json.taskId }}\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": false
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2768,
+        -176
+      ],
+      "id": "9db00840-796b-4f36-8b8f-e6f9e7d7f240",
+      "name": "Captcha Result",
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8c96e65c-b140-4b1e-a9f6-b82c9884759f",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "processing",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "1e95ed3b-34aa-4f6b-9873-abd67a07a662",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "waiting",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2992,
+        -288
+      ],
+      "id": "560f0b9b-5a57-4db0-ad18-46dbdb547b38",
+      "name": "Check if Task is resolved",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e91df4fb-9484-4751-989e-a8609e78d758",
+              "leftValue": "={{ $json.errorCode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3200,
+        -48
+      ],
+      "id": "93c4c643-85ff-4ce4-81ca-17363ab59fa6",
+      "name": "Check Error Code is Existed",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.endpoint }}",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={{ $json.param.toJsonString() }}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={{ $('GET: UUID and Cookie Fields').item.json.headers.toJsonString() }}",
+        "options": {
+          "allowUnauthorizedCerts": false,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3712,
+        -64
+      ],
+      "id": "94f6cfe8-8a25-4ffe-a949-7f61367f7e4a",
+      "name": "Query Info",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = {\n  cm: \"cm\",\n  mst: \"\",\n  fullname: \"\",\n  address: \"\",\n  cmt: \"\"\n};\n\nconst encoded = Object.entries(data)\n  .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)\n  .join(\"&\");\n\nreturn [\n  {\n    json: {encoded}\n  }\n]\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        96
+      ],
+      "id": "b74d7d39-010d-46b0-9cfd-8181aa3b4304",
+      "name": "Init Parameters"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tax_number = $('Config').first().json.tax_number;\n\nconst data = {\n  cm: \"cm\",\n  mst: tax_number,\n  fullname: \"\",\n  address: \"\",\n  cmt: $('Config').first().json.id_number,\n  captcha: $input.first().json.solution.text\n};\n\nconst encoded = Object.entries(data)\n  .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)\n  .join(\"&\");\n\nreturn [\n  {\n    json: {\n      param: data,\n      encoded}\n  }\n]\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3552,
+        -64
+      ],
+      "id": "27dbe75d-c2ef-4a2e-8962-ef8986473369",
+      "name": "Update paramters"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        960,
+        592
+      ],
+      "id": "a904897e-7b14-40b2-a22a-873263beb55e",
+      "name": "Loop Over Items",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const record = $('Loop Over Items').first().json;\nrecord['Status'] = 'Không tìm thấy trong hệ thống';\nreturn[\n  {json: $('Loop Over Items').first().json}\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4784,
+        464
+      ],
+      "id": "6f814d6d-883e-433f-9303-9d3cc606f444",
+      "name": "Process Empty Result",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "fileName": "=records_{{ $now.format('yyyyMMddhhmmss') }}_results.xlsx",
+          "headerRow": true
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1296,
+        -304
+      ],
+      "id": "477e775e-0f8e-4868-8d19-bbe272725101",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('On form submission').item.json.Email }}",
+        "subject": "CS.Tax Scraper: Batch Completed",
+        "bodyContent": "=Dear <strong>{{ $('GET User Info').item.json.value[0].displayName }}</strong>,<br><br>\n\nYour data submission has been recorded at {{ $('startTime').item.json.currentDate }}.<br><br>\n\n<strong>Summary:</strong><br>\n- Filename: {{ $('On form submission').item.json['Batch File'].filename }}\n- End time: {{ $('Endtime').item.json.currentDate }}<br>\n- Duration: {{ $('Dutations').item.json.timeDifference.hours }}:{{ $('Dutations').item.json.timeDifference.minutes }}:{{ $('Dutations').item.json.timeDifference.seconds.round(2) }}<br>\n- Total records: {{ $('Loop Over Items').all().length }}<br>",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "data"
+              }
+            ]
+          },
+          "ccRecipients": "binh.hung.phung@dksh.com",
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        -304
+      ],
+      "id": "413b2d14-1a5e-4791-a9f4-a2fd2f4e9fad",
+      "name": "Microsoft Outlook",
+      "webhookId": "4f85e448-c53d-4c22-a50e-7e9dee73a1e8",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "PGL2O9oB2a0jFfDl",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        592
+      ],
+      "id": "662fa5f3-98b9-4ac3-a355-f94cba84c1fd",
+      "name": "startTime"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81e61427-4d6c-4b86-b1d9-98369d3877a4",
+              "name": "BatchNo",
+              "value": "={{$now.format('yyyyMMddhhmmss')}}",
+              "type": "string"
+            },
+            {
+              "id": "b71a9db7-9095-4f73-aa44-90c23db3ee10",
+              "name": "",
+              "value": "={{ $('On form submission').item.json['Batch File'].filename }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -608,
+        592
+      ],
+      "id": "806466b9-1cd5-4b9e-a8d1-b7f45f8bd4d7",
+      "name": "init Batch"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -304
+      ],
+      "id": "f9b32f73-49b5-445b-86e6-2b7c16efe482",
+      "name": "Endtime"
+    },
+    {
+      "parameters": {
+        "operation": "getTimeBetweenDates",
+        "startDate": "={{ $('startTime').item.json.currentDate }}",
+        "endDate": "={{ $json.currentDate }}",
+        "units": [
+          "hour",
+          "minute",
+          "second"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        -304
+      ],
+      "id": "4985f455-0d34-47db-bd5a-ffcaf8c44833",
+      "name": "Dutations"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rows[0] }}",
+                    "rightValue": "Vui lòng nhập đúng mã xác nhận!",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4311afaa-6bb8-47cf-8834-64cde64e2acd"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Incorrect Captcha"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d5594bd3-757b-463b-91da-99f7733f2103",
+                    "leftValue": "={{ $json.rows[0] }}",
+                    "rightValue": "Mã số thuế không hợp lệ!",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Incorrect TaxCode"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d1d8cb67-075b-4c4f-a56b-cedfe4b4a8bb",
+                    "leftValue": "={{ $json.rows[1] }}",
+                    "rightValue": "=Không tìm thấy người nộp thuế nào phù hợp.",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Notfound"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        4464,
+        -16
+      ],
+      "id": "223594f8-16dd-4e0d-ad1d-cf6f7722843d",
+      "name": "Switch: Error"
+    },
+    {
+      "parameters": {
+        "jsCode": "const record = $('Loop Over Items').first().json;\nrecord['Status'] = 'Mã số thuế không hợp lệ';\nreturn[\n  {json: $('Loop Over Items').first().json}\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4800,
+        704
+      ],
+      "id": "d766162b-ecd9-45db-835a-d785250bfa3c",
+      "name": "Process Error Tax code",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const record = $('Loop Over Items').first().json;\nrecord['Status'] = 'Lỗi hệ thống (no responses/timeout)';\nreturn[\n  {json: $('Loop Over Items').first().json}\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4800,
+        928
+      ],
+      "id": "3bad06e6-de60-4abc-be35-6e188b2ddf74",
+      "name": "Process System Errors",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "VAT Registration No.",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        736,
+        592
+      ],
+      "id": "05830330-e2c8-454a-970b-255f5c32dc81",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "headers",
+              "cssSelector": "table.ta_border th",
+              "returnArray": true
+            },
+            {
+              "key": "rows",
+              "cssSelector": "table.ta_border td",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        3888,
+        -64
+      ],
+      "id": "61163987-d1bf-4b2b-8b94-602a27c9c67b",
+      "name": "HTML",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst outputs = []\nconst originalRecord = $('Loop Over Items').first().json;\n\nconst rowsCount = $input.first().json.rows.length / $input.first().json.headers.length;\nfor (let index = 0; index < rowsCount; index++) {\n  let temp = {...originalRecord};\n  for (const header of $input.first().json.headers) {\n      let rowValue = $input.first().json.rows.shift(); // Removes the first element\n      temp[header] = rowValue\n  }\n  delete temp.STT;\n  temp['Status'] = 'MST Tồn Tại';\n  outputs.push(temp);\n}\nreturn outputs"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4768,
+        240
+      ],
+      "id": "89e68158-1686-4244-8549-c77286c3ee2f",
+      "name": "Process all records"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8e510d0d-913d-4cdc-8cb8-691e41ea1a02",
+              "leftValue": "={{ $json.headers }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4128,
+        -80
+      ],
+      "id": "7183e598-9826-4498-bad8-2b2fadb4f39a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read binary input\nconst binary = $('On form submission').item.binary.Batch_File;\n\nconst fileName = $('On form submission').item.binary.Batch_File.fileName;\nconst mimeType = $('On form submission').item.binary.Batch_File.mimeType;\nconst fileSize = $('On form submission').item.binary.Batch_File.fileSize;\n\n\nreturn [\n  {\n    json: {\n      success: true,\n      fileName: fileName,\n      mimeType: mimeType,\n      fileSize: fileSize\n    },\n    binary: $('On form submission').item.binary\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        592
+      ],
+      "id": "450a4d07-655f-439d-9ccf-5eb424c8bdfa",
+      "name": "Read Binary Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read binary input\nconst binary = $('Convert to File').item.binary.data;\n\nconst fileName = $('Convert to File').item.binary.data.fileName;\nconst mimeType = $('Convert to File').item.binary.data.mimeType;\nconst fileSize = $('Convert to File').item.binary.data.fileSize;\n\n\nreturn [\n  {\n    json: {\n      success: true,\n      fileName: fileName,\n      mimeType: mimeType,\n      fileSize: fileSize\n    },\n    binary: $('Convert to File').item.binary\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -304
+      ],
+      "id": "1b038b44-f8b3-46fd-a931-4b103fe6087c",
+      "name": "Read Binary Data1"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "init Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Correct email?": {
+      "main": [
+        [
+          {
+            "node": "GET User Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET User Info": {
+      "main": [
+        [
+          {
+            "node": "Read Binary Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Init Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: Captcha uuid": {
+      "main": [
+        [
+          {
+            "node": "GET: UUID and Cookie Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process System Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: UUID and Cookie Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process System Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Create task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create task": {
+      "main": [
+        [
+          {
+            "node": "Captcha Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process System Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Captcha Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Captcha Result": {
+      "main": [
+        [
+          {
+            "node": "Check if Task is resolved",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process System Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Task is resolved": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Error Code is Existed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Error Code is Existed": {
+      "main": [
+        [
+          {
+            "node": "Update paramters",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process System Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Info": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init Parameters": {
+      "main": [
+        [
+          {
+            "node": "GET: Captcha uuid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update paramters": {
+      "main": [
+        [
+          {
+            "node": "Query Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Empty Result": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Endtime",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "startTime": {
+      "main": [
+        [
+          {
+            "node": "Correct email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "init Batch": {
+      "main": [
+        [
+          {
+            "node": "startTime",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Endtime": {
+      "main": [
+        [
+          {
+            "node": "Dutations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dutations": {
+      "main": [
+        [
+          {
+            "node": "Read Binary Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Error": {
+      "main": [
+        [
+          {
+            "node": "Init Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Error Tax code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Empty Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process all records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Error Tax code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process System Errors": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process System Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process all records": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Process Empty Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch: Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Binary Data": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Binary Data1": {
+      "main": [
+        [
+          {
+            "node": "Microsoft Outlook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "On form submission": [
+      {
+        "Email": "ngoc.chau.nguyen@dksh.com",
+        "Batch File": {
+          "filename": "mstdn_template 29102025 (1) - Copy.xlsx",
+          "mimetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "size": 12806
+        },
+        "Type": "mstdn",
+        "submittedAt": "2025-10-31T15:31:54.786+08:00",
+        "formMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "66e28cbb3850b511b1209f3d31dd19e9b521b19298bfc7be79f6a0019e7fadaf"
+  }
+}
